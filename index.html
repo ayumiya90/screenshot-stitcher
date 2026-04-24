@@ -1,0 +1,601 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<title>截圖拼接工具</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #faf7f2;
+    --surface: #ffffff;
+    --primary: #e8824a;
+    --primary-hover: #d66f38;
+    --text: #2a2a2a;
+    --muted: #888;
+    --border: #e8e0d5;
+    --shadow: 0 4px 20px rgba(232, 130, 74, 0.08);
+  }
+  body {
+    font-family: -apple-system, "PingFang TC", "Microsoft JhengHei", sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    padding: 32px 20px;
+    line-height: 1.6;
+  }
+  .wrap { max-width: 980px; margin: 0 auto; }
+  h1 {
+    font-size: 28px;
+    margin-bottom: 6px;
+    color: var(--text);
+  }
+  .subtitle {
+    color: var(--muted);
+    margin-bottom: 24px;
+    font-size: 14px;
+  }
+
+  .controls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    align-items: center;
+    margin-bottom: 20px;
+    padding: 16px 20px;
+    background: var(--surface);
+    border-radius: 12px;
+    box-shadow: var(--shadow);
+  }
+  .control-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+  }
+  .control-group label { color: var(--muted); }
+  select, input[type="number"] {
+    padding: 6px 10px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    font-size: 14px;
+    background: var(--bg);
+    outline: none;
+  }
+  input[type="number"] { width: 80px; }
+
+  .btn {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-family: inherit;
+  }
+  .btn-primary {
+    background: var(--primary);
+    color: white;
+  }
+  .btn-primary:hover { background: var(--primary-hover); }
+  .btn-primary:disabled {
+    background: #ccc;
+    cursor: not-allowed;
+  }
+  .btn-ghost {
+    background: transparent;
+    color: var(--muted);
+    border: 1px solid var(--border);
+  }
+  .btn-ghost:hover { background: var(--bg); color: var(--text); }
+
+  .drop-zone {
+    border: 2.5px dashed var(--border);
+    border-radius: 16px;
+    padding: 60px 20px;
+    text-align: center;
+    background: var(--surface);
+    cursor: pointer;
+    transition: all 0.2s;
+    margin-bottom: 20px;
+  }
+  .drop-zone:hover,
+  .drop-zone.dragover {
+    border-color: var(--primary);
+    background: #fff8f1;
+  }
+  .drop-zone-icon {
+    font-size: 48px;
+    margin-bottom: 12px;
+  }
+  .drop-zone-text {
+    font-size: 16px;
+    color: var(--text);
+    margin-bottom: 4px;
+  }
+  .drop-zone-hint {
+    font-size: 13px;
+    color: var(--muted);
+  }
+
+  .thumbs {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+  .thumb {
+    position: relative;
+    background: var(--surface);
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: var(--shadow);
+    cursor: grab;
+    transition: transform 0.15s, box-shadow 0.15s;
+    user-select: none;
+  }
+  .thumb:active { cursor: grabbing; }
+  .thumb.dragging { opacity: 0.35; }
+  .thumb.drag-over {
+    transform: scale(1.04);
+    box-shadow: 0 0 0 3px var(--primary), 0 6px 24px rgba(232, 130, 74, 0.25);
+  }
+  .thumb img {
+    -webkit-user-drag: none;
+    user-drag: none;
+  }
+  .thumb-pic {
+    width: 100%;
+    height: 110px;
+    object-fit: cover;
+    display: block;
+    pointer-events: none;
+  }
+  .thumb-info {
+    padding: 6px 8px;
+    font-size: 11px;
+    color: var(--muted);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .thumb-order {
+    position: absolute;
+    top: 6px;
+    left: 6px;
+    background: var(--primary);
+    color: white;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: 600;
+  }
+  .thumb-remove {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    background: rgba(0,0,0,0.6);
+    color: white;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    cursor: pointer;
+    border: none;
+    line-height: 1;
+  }
+  .thumb-remove:hover { background: rgba(0,0,0,0.85); }
+
+  .thumb-moves {
+    display: flex;
+    gap: 4px;
+    padding: 4px 8px 8px;
+  }
+  .move-btn {
+    flex: 1;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 4px 0;
+    font-size: 13px;
+    cursor: pointer;
+    color: var(--text);
+    transition: all 0.15s;
+    font-family: inherit;
+  }
+  .move-btn:hover:not(:disabled) {
+    background: var(--primary);
+    color: white;
+    border-color: var(--primary);
+  }
+  .move-btn:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+  }
+
+  .preview-section {
+    background: var(--surface);
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: var(--shadow);
+  }
+  .preview-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+  }
+  .preview-header h2 {
+    font-size: 16px;
+    font-weight: 600;
+  }
+  .preview-info {
+    font-size: 13px;
+    color: var(--muted);
+  }
+  .preview-box {
+    max-height: 600px;
+    overflow: auto;
+    background: #f5f2ed;
+    border-radius: 8px;
+    padding: 12px;
+    text-align: center;
+  }
+  .preview-box img {
+    max-width: 100%;
+    display: inline-block;
+    border-radius: 4px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  }
+  .hidden { display: none; }
+
+  .tip {
+    font-size: 12px;
+    color: var(--muted);
+    margin-top: 16px;
+    text-align: center;
+  }
+  .tip-top {
+    margin-top: 0;
+    margin-bottom: 10px;
+    text-align: left;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>截圖拼接工具</h1>
+  <p class="subtitle">把多張截圖拖進來，一鍵拼成一張長圖。檔案只在你的瀏覽器處理，不會上傳。</p>
+
+  <div class="drop-zone" id="dropZone">
+    <div class="drop-zone-icon">📥</div>
+    <div class="drop-zone-text">把截圖拖進來，或點這裡選檔，也可直接擷取後按 Ctrl + V 貼上</div>
+    <div class="drop-zone-hint">支援 PNG、JPG、WebP，可一次選多張</div>
+    <input type="file" id="fileInput" accept="image/*" multiple hidden>
+  </div>
+
+  <div class="controls">
+    <div class="control-group">
+      <label>拼接方向</label>
+      <select id="direction">
+        <option value="vertical">垂直（上下接）</option>
+        <option value="horizontal">水平（左右接）</option>
+      </select>
+    </div>
+    <div class="control-group">
+      <label>對齊寬度</label>
+      <select id="alignMode">
+        <option value="first">以第一張為準</option>
+        <option value="min">以最窄為準</option>
+        <option value="max">以最寬為準</option>
+        <option value="original">不縮放（原圖）</option>
+      </select>
+    </div>
+    <div class="control-group">
+      <label>間距</label>
+      <input type="number" id="gap" value="0" min="0" max="200">
+      <span style="color:var(--muted); font-size:13px;">px</span>
+    </div>
+    <div class="control-group">
+      <label>背景</label>
+      <input type="color" id="bgColor" value="#ffffff">
+    </div>
+    <div style="flex:1"></div>
+    <button class="btn btn-ghost" id="clearBtn">清空</button>
+    <button class="btn btn-primary" id="downloadBtn" disabled>下載長圖</button>
+  </div>
+
+  <p class="tip tip-top hidden" id="thumbsTip">拖曳縮圖互換位置來調整順序；右上 × 可移除單張。</p>
+  <div id="thumbs" class="thumbs"></div>
+
+  <div class="preview-section hidden" id="previewSection">
+    <div class="preview-header">
+      <h2>預覽</h2>
+      <div class="preview-info" id="previewInfo"></div>
+    </div>
+    <div class="preview-box">
+      <img id="previewImg" alt="預覽">
+    </div>
+  </div>
+</div>
+
+<script>
+const dropZone = document.getElementById('dropZone');
+const fileInput = document.getElementById('fileInput');
+const thumbsEl = document.getElementById('thumbs');
+const previewSection = document.getElementById('previewSection');
+const previewImg = document.getElementById('previewImg');
+const previewInfo = document.getElementById('previewInfo');
+const downloadBtn = document.getElementById('downloadBtn');
+const clearBtn = document.getElementById('clearBtn');
+const directionEl = document.getElementById('direction');
+const alignModeEl = document.getElementById('alignMode');
+const gapEl = document.getElementById('gap');
+const bgColorEl = document.getElementById('bgColor');
+
+let items = []; // { id, name, img, width, height }
+let uid = 0;
+
+dropZone.addEventListener('click', () => fileInput.click());
+fileInput.addEventListener('change', e => addFiles(e.target.files));
+
+['dragenter','dragover'].forEach(ev => {
+  dropZone.addEventListener(ev, e => {
+    e.preventDefault();
+    dropZone.classList.add('dragover');
+  });
+});
+['dragleave','drop'].forEach(ev => {
+  dropZone.addEventListener(ev, e => {
+    e.preventDefault();
+    dropZone.classList.remove('dragover');
+  });
+});
+dropZone.addEventListener('drop', e => {
+  if (!hasExternalFiles(e.dataTransfer)) return;
+  addFiles(e.dataTransfer.files);
+});
+
+// 整頁也接受拖入
+window.addEventListener('dragover', e => e.preventDefault());
+window.addEventListener('drop', e => {
+  e.preventDefault();
+  if (!hasExternalFiles(e.dataTransfer)) return;
+  if (!dropZone.contains(e.target)) addFiles(e.dataTransfer.files);
+});
+
+// 貼上也接受
+window.addEventListener('paste', e => {
+  const files = [];
+  for (const it of e.clipboardData.items) {
+    if (it.kind === 'file') {
+      const f = it.getAsFile();
+      if (f && f.type.startsWith('image/')) files.push(f);
+    }
+  }
+  if (files.length) addFiles(files);
+});
+
+async function addFiles(fileList) {
+  const files = Array.from(fileList).filter(f => f.type.startsWith('image/'));
+  if (!files.length) return;
+  // 依檔名排序（常見螢幕截圖序號會依時間順排）
+  files.sort((a,b) => a.name.localeCompare(b.name, undefined, {numeric:true}));
+  for (const f of files) {
+    const img = await loadImage(f);
+    items.push({
+      id: ++uid,
+      name: f.name,
+      img,
+      width: img.naturalWidth,
+      height: img.naturalHeight
+    });
+  }
+  render();
+}
+
+function loadImage(file) {
+  return new Promise((resolve, reject) => {
+    const url = URL.createObjectURL(file);
+    const img = new Image();
+    img.onload = () => resolve(img);
+    img.onerror = reject;
+    img.src = url;
+  });
+}
+
+function render() {
+  thumbsEl.innerHTML = '';
+  items.forEach((it, i) => {
+    const el = document.createElement('div');
+    el.className = 'thumb';
+    el.draggable = true;
+    el.dataset.id = it.id;
+    el.innerHTML = `
+      <span class="thumb-order">${i+1}</span>
+      <button class="thumb-remove" data-id="${it.id}" title="移除">×</button>
+      <img class="thumb-pic" src="${it.img.src}" alt="" draggable="false">
+      <div class="thumb-info">
+        <span>${it.width}×${it.height}</span>
+      </div>
+    `;
+    thumbsEl.appendChild(el);
+  });
+  bindThumbEvents();
+  document.getElementById('thumbsTip').classList.toggle('hidden', items.length === 0);
+  updatePreview();
+}
+
+let isInternalDrag = false;
+let dragId = null;
+
+function bindThumbEvents() {
+  thumbsEl.querySelectorAll('.thumb-remove').forEach(btn => {
+    btn.addEventListener('mousedown', e => e.stopPropagation());
+    btn.addEventListener('click', e => {
+      e.stopPropagation();
+      const id = Number(btn.dataset.id);
+      items = items.filter(x => x.id !== id);
+      render();
+    });
+  });
+
+  thumbsEl.querySelectorAll('.thumb').forEach(el => {
+    el.addEventListener('dragstart', e => {
+      dragId = Number(el.dataset.id);
+      isInternalDrag = true;
+      el.classList.add('dragging');
+      e.dataTransfer.effectAllowed = 'move';
+      e.dataTransfer.setData('text/plain', 'reorder-' + dragId);
+    });
+    el.addEventListener('dragend', () => {
+      el.classList.remove('dragging');
+      thumbsEl.querySelectorAll('.thumb').forEach(x => x.classList.remove('drag-over'));
+      isInternalDrag = false;
+      dragId = null;
+    });
+    el.addEventListener('dragover', e => {
+      if (!isInternalDrag) return;
+      e.preventDefault();
+      e.dataTransfer.dropEffect = 'move';
+      el.classList.add('drag-over');
+    });
+    el.addEventListener('dragleave', () => el.classList.remove('drag-over'));
+    el.addEventListener('drop', e => {
+      e.preventDefault();
+      e.stopPropagation();
+      el.classList.remove('drag-over');
+      const targetId = Number(el.dataset.id);
+      if (dragId == null || dragId === targetId) return;
+      const fromIdx = items.findIndex(x => x.id === dragId);
+      const toIdx = items.findIndex(x => x.id === targetId);
+      if (fromIdx < 0 || toIdx < 0) return;
+      const [moved] = items.splice(fromIdx, 1);
+      items.splice(toIdx, 0, moved);
+      render();
+    });
+  });
+}
+
+function hasExternalFiles(dt) {
+  if (!dt) return false;
+  if (isInternalDrag) return false;
+  const types = Array.from(dt.types || []);
+  return types.includes('Files') && dt.files && dt.files.length > 0;
+}
+
+[directionEl, alignModeEl, gapEl, bgColorEl].forEach(el => {
+  el.addEventListener('change', updatePreview);
+  el.addEventListener('input', updatePreview);
+});
+
+clearBtn.addEventListener('click', () => {
+  items = [];
+  render();
+});
+
+downloadBtn.addEventListener('click', () => {
+  if (!items.length) return;
+  const canvas = stitch();
+  canvas.toBlob(blob => {
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    const ts = new Date().toISOString().replace(/[:.]/g,'-').slice(0,19);
+    a.href = url;
+    a.download = `拼接_${ts}.png`;
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  }, 'image/png');
+});
+
+function stitch() {
+  const dir = directionEl.value;
+  const mode = alignModeEl.value;
+  const gap = parseInt(gapEl.value) || 0;
+  const bg = bgColorEl.value;
+
+  // 決定每張的繪製尺寸
+  let target; // 垂直時代表寬；水平時代表高
+  if (mode === 'original') {
+    target = null;
+  } else {
+    const dim = dir === 'vertical' ? 'width' : 'height';
+    const vals = items.map(it => it[dim]);
+    if (mode === 'first') target = vals[0];
+    else if (mode === 'min') target = Math.min(...vals);
+    else if (mode === 'max') target = Math.max(...vals);
+  }
+
+  // 算每張縮放後的長寬
+  const sizes = items.map(it => {
+    if (target == null) return { w: it.width, h: it.height };
+    if (dir === 'vertical') {
+      const w = target;
+      const h = Math.round(it.height * (target / it.width));
+      return { w, h };
+    } else {
+      const h = target;
+      const w = Math.round(it.width * (target / it.height));
+      return { w, h };
+    }
+  });
+
+  let canvasW, canvasH;
+  if (dir === 'vertical') {
+    canvasW = Math.max(...sizes.map(s => s.w));
+    canvasH = sizes.reduce((s, v) => s + v.h, 0) + gap * (items.length - 1);
+  } else {
+    canvasH = Math.max(...sizes.map(s => s.h));
+    canvasW = sizes.reduce((s, v) => s + v.w, 0) + gap * (items.length - 1);
+  }
+
+  const canvas = document.createElement('canvas');
+  canvas.width = canvasW;
+  canvas.height = canvasH;
+  const ctx = canvas.getContext('2d');
+  ctx.fillStyle = bg;
+  ctx.fillRect(0, 0, canvasW, canvasH);
+
+  let cursor = 0;
+  items.forEach((it, i) => {
+    const { w, h } = sizes[i];
+    if (dir === 'vertical') {
+      const x = Math.floor((canvasW - w) / 2); // 置中
+      ctx.drawImage(it.img, x, cursor, w, h);
+      cursor += h + gap;
+    } else {
+      const y = Math.floor((canvasH - h) / 2);
+      ctx.drawImage(it.img, cursor, y, w, h);
+      cursor += w + gap;
+    }
+  });
+
+  return canvas;
+}
+
+let previewTimer = null;
+function updatePreview() {
+  clearTimeout(previewTimer);
+  previewTimer = setTimeout(() => {
+    if (!items.length) {
+      previewSection.classList.add('hidden');
+      downloadBtn.disabled = true;
+      return;
+    }
+    previewSection.classList.remove('hidden');
+    downloadBtn.disabled = false;
+    const canvas = stitch();
+    previewImg.src = canvas.toDataURL('image/png');
+    previewInfo.textContent = `${items.length} 張 · 成品 ${canvas.width} × ${canvas.height} px`;
+  }, 100);
+}
+</script>
+</body>
+</html>
