@@ -2,6 +2,8 @@
 <html lang="zh-Hant">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#FFB66E">
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' blob: data:; script-src 'self' 'unsafe-inline'; connect-src 'self'; base-uri 'self'; form-action 'none'; object-src 'none';">
 <meta name="referrer" content="strict-origin-when-cross-origin">
 <title>截圖拼接工具 · Abby Tools</title>
@@ -384,15 +386,167 @@
     color: var(--text-muted);
   }
 
-  /* Responsive ============================================ */
+  /* Utility: show/hide by viewport =========================== */
+  .only-desktop { display: inline; }
+  .only-mobile { display: none; }
+
+  /* Responsive — Tablet & Mobile ============================= */
   @media (max-width: 768px) {
-    body { padding: 32px 16px; }
-    h1 { font-size: 28px; }
-    .drop-zone { padding: 40px 20px; }
-    .drop-zone-icon { width: 64px; height: 64px; font-size: 36px; }
-    .controls { padding: 16px; gap: 12px; }
-    .thumbs { grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 12px; }
-    .btn { padding: 10px 20px; font-size: 14px; }
+    body { padding: 24px 16px; }
+    .wrap { max-width: 100%; }
+    h1 { font-size: 26px; line-height: 1.2; }
+    .subtitle {
+      font-size: 14px;
+      margin-bottom: 20px;
+      line-height: 1.65;
+    }
+
+    .only-desktop { display: none; }
+    .only-mobile { display: inline; }
+
+    /* Drop zone — bigger touch target, simpler text */
+    .drop-zone {
+      padding: 32px 20px;
+      border-radius: 14px;
+      border-left-width: 4px;
+    }
+    .drop-zone-icon {
+      width: 60px;
+      height: 60px;
+      margin-bottom: 12px;
+    }
+    .drop-zone-icon svg {
+      width: 30px;
+      height: 30px;
+    }
+    .drop-zone-text {
+      font-size: 15px;
+      line-height: 1.5;
+      font-weight: 600;
+    }
+    .drop-zone-hint {
+      font-size: 13px;
+      margin-top: 2px;
+    }
+
+    /* Controls — stack as list rows with label left / control right */
+    .controls {
+      flex-direction: column;
+      align-items: stretch;
+      gap: 0;
+      padding: 4px 16px;
+    }
+    .control-group {
+      justify-content: space-between;
+      padding: 14px 0;
+      border-bottom: 1px solid var(--border);
+      min-height: 48px;
+      gap: 12px;
+    }
+    .control-group:last-of-type { border-bottom: none; }
+    .control-group label {
+      font-weight: 600;
+      color: var(--text);
+      font-size: 15px;
+    }
+    .control-group select,
+    .control-group input[type="number"] {
+      min-width: 150px;
+      font-size: 15px;
+      padding: 10px 12px;
+    }
+    .control-group input[type="color"] {
+      width: 48px;
+      height: 40px;
+    }
+
+    /* Hide the flex spacer on mobile */
+    .controls > div[style*="flex:1"] { display: none; }
+
+    /* Action buttons — full width, stacked, sit at bottom of controls */
+    .controls .btn {
+      width: 100%;
+      padding: 14px;
+      font-size: 16px;
+      margin-top: 4px;
+    }
+    .controls #clearBtn {
+      order: 2;
+      margin-top: 8px;
+      border: 1px solid var(--border);
+    }
+    .controls #downloadBtn {
+      order: 1;
+      margin-top: 16px;
+    }
+
+    /* Thumbs — cleaner 2-column grid */
+    .thumbs {
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+    .thumb-pic { height: 110px; }
+    .thumb-order {
+      width: 24px;
+      height: 24px;
+      font-size: 11px;
+    }
+    .thumb-remove {
+      width: 30px;
+      height: 30px;
+      font-size: 18px;
+    }
+
+    .tip { font-size: 13px; }
+
+    /* Preview — shorter box, better scroll UX */
+    .preview-section {
+      padding: 16px;
+      border-radius: 12px;
+    }
+    .preview-header {
+      margin-bottom: 14px;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .preview-header h2 {
+      font-size: 18px;
+    }
+    .preview-info {
+      font-size: 12px;
+      padding: 3px 10px;
+    }
+    .preview-box {
+      max-height: 420px;
+      padding: 10px;
+    }
+
+    /* Footer — stacked for readability */
+    .site-footer {
+      margin-top: 36px;
+      padding-top: 20px;
+      font-size: 12px;
+    }
+    .footer-sep { display: none; }
+    .site-footer a { display: inline-block; }
+    .site-footer > a { margin-top: 4px; }
+  }
+
+  /* Small phones ============================================ */
+  @media (max-width: 380px) {
+    body { padding: 20px 14px; }
+    h1 { font-size: 22px; }
+    .drop-zone { padding: 28px 16px; }
+    .thumbs {
+      grid-template-columns: 1fr;
+      gap: 10px;
+    }
+    .thumb-pic { height: 160px; }
+    .control-group select,
+    .control-group input[type="number"] {
+      min-width: 130px;
+    }
   }
 </style>
 </head>
@@ -409,8 +563,14 @@
         <line x1="12" y1="15" x2="12" y2="3"/>
       </svg>
     </div>
-    <div class="drop-zone-text">把截圖拖進來，或點這裡選檔，也可直接擷取後按 Ctrl + V 貼上</div>
-    <div class="drop-zone-hint">支援 PNG、JPG、WebP，可一次選多張</div>
+    <div class="drop-zone-text">
+      <span class="only-desktop">把截圖拖進來，或點這裡選檔，也可直接擷取後按 Ctrl + V 貼上</span>
+      <span class="only-mobile">點這裡選擇照片</span>
+    </div>
+    <div class="drop-zone-hint">
+      <span class="only-desktop">支援 PNG、JPG、WebP，可一次選多張</span>
+      <span class="only-mobile">可一次選多張，支援 PNG / JPG / WebP</span>
+    </div>
     <input type="file" id="fileInput" accept="image/*" multiple hidden>
   </div>
 
