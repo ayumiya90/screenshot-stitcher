@@ -2,143 +2,244 @@
 <html lang="zh-Hant">
 <head>
 <meta charset="UTF-8">
-<title>截圖拼接工具</title>
+<title>截圖拼接工具 · Abby Tools</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+TC:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  /* Abby Brand Design System ================================ */
   :root {
-    --bg: #faf7f2;
-    --surface: #ffffff;
-    --primary: #e8824a;
-    --primary-hover: #d66f38;
-    --text: #2a2a2a;
-    --muted: #888;
-    --border: #e8e0d5;
-    --shadow: 0 4px 20px rgba(232, 130, 74, 0.08);
-  }
-  body {
-    font-family: -apple-system, "PingFang TC", "Microsoft JhengHei", sans-serif;
-    background: var(--bg);
-    color: var(--text);
-    min-height: 100vh;
-    padding: 32px 20px;
-    line-height: 1.6;
-  }
-  .wrap { max-width: 980px; margin: 0 auto; }
-  h1 {
-    font-size: 28px;
-    margin-bottom: 6px;
-    color: var(--text);
-  }
-  .subtitle {
-    color: var(--muted);
-    margin-bottom: 24px;
-    font-size: 14px;
+    /* Primary */
+    --primary: #FFB66E;          /* 主橘 */
+    --primary-hover: #E8973D;    /* 深橘 Hover */
+    --primary-tint: #FFF3E5;     /* 主橘 10% */
+    --cream: #FFF8F0;            /* 奶油米白 */
+    --yellow: #FADE9E;           /* 淺黃 */
+    --coral: #EB8F80;            /* 珊瑚 */
+
+    /* Neutrals */
+    --text: #606060;             /* 主文字 */
+    --text-secondary: #8A8A8A;   /* 次文字 */
+    --text-muted: #B0B0B0;       /* 弱化 */
+    --surface: #FFFFFF;          /* 卡片白 */
+    --border: #E8E8E8;           /* 邊框 */
+    --disabled: #D4D4D4;
+
+    /* Semantic */
+    --success: #7BC47F;
+    --danger: #D9534F;
+    --info: #5BC0DE;
+
+    /* Shadows */
+    --shadow-subtle: 0 1px 3px rgba(0,0,0,0.05);
+    --shadow-card: 0 4px 12px rgba(0,0,0,0.08);
+    --shadow-elevated: 0 8px 24px rgba(0,0,0,0.12);
+    --shadow-modal: 0 16px 48px rgba(0,0,0,0.16);
+    --shadow-brand: 0 2px 8px rgba(255,182,110,0.3);
+    --shadow-brand-hover: 0 4px 14px rgba(255,182,110,0.4);
+
+    /* Radii */
+    --r-sm: 4px;
+    --r-input: 8px;
+    --r-card: 12px;
+    --r-lg: 16px;
+    --r-pill: 9999px;
   }
 
+  body {
+    font-family: "Noto Sans TC", "Inter", "PingFang TC", "Microsoft JhengHei", sans-serif;
+    font-weight: 400;
+    background: var(--cream);
+    color: var(--text);
+    min-height: 100vh;
+    padding: 48px 24px;
+    line-height: 1.75;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 1200px; margin: 0 auto; }
+
+  h1 {
+    font-size: 36px;
+    font-weight: 700;
+    line-height: 1.25;
+    letter-spacing: -0.01em;
+    color: var(--text);
+    margin-bottom: 8px;
+  }
+  .subtitle {
+    color: var(--text-secondary);
+    font-size: 16px;
+    line-height: 1.75;
+    margin-bottom: 32px;
+  }
+
+  /* Drop Zone (特色卡片：奶油米白 + 左橘邊框) ================ */
+  .drop-zone {
+    background: var(--cream);
+    border: 2.5px dashed var(--border);
+    border-left: 4px solid var(--primary);
+    border-radius: var(--r-lg);
+    padding: 56px 32px;
+    text-align: center;
+    cursor: pointer;
+    transition: border-color 0.25s, background 0.25s, transform 0.25s;
+    margin-bottom: 24px;
+    box-shadow: var(--shadow-subtle);
+  }
+  .drop-zone:hover,
+  .drop-zone.dragover {
+    border-color: var(--primary-hover);
+    border-left-color: var(--primary-hover);
+    background: var(--primary-tint);
+    transform: translateY(-2px);
+  }
+  .drop-zone-icon {
+    font-size: 48px;
+    margin-bottom: 16px;
+    display: inline-flex;
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background: var(--primary);
+    color: white;
+    align-items: center;
+    justify-content: center;
+    box-shadow: var(--shadow-brand);
+  }
+  .drop-zone-text {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 6px;
+    line-height: 1.5;
+  }
+  .drop-zone-hint {
+    font-size: 14px;
+    color: var(--text-secondary);
+  }
+
+  /* Controls Card ========================================== */
   .controls {
     display: flex;
     flex-wrap: wrap;
-    gap: 12px;
+    gap: 16px;
     align-items: center;
-    margin-bottom: 20px;
-    padding: 16px 20px;
+    margin-bottom: 24px;
+    padding: 20px 24px;
     background: var(--surface);
-    border-radius: 12px;
-    box-shadow: var(--shadow);
+    border-radius: var(--r-card);
+    box-shadow: var(--shadow-card);
   }
   .control-group {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 10px;
     font-size: 14px;
   }
-  .control-group label { color: var(--muted); }
-  select, input[type="number"] {
-    padding: 6px 10px;
-    border: 1px solid var(--border);
-    border-radius: 6px;
-    font-size: 14px;
-    background: var(--bg);
-    outline: none;
-  }
-  input[type="number"] { width: 80px; }
-
-  .btn {
-    padding: 10px 20px;
-    border: none;
-    border-radius: 8px;
-    font-size: 14px;
+  .control-group label {
+    color: var(--text-secondary);
     font-weight: 500;
-    cursor: pointer;
-    transition: all 0.2s;
+  }
+
+  select, input[type="number"] {
+    padding: 10px 14px;
+    border: 1px solid var(--border);
+    border-radius: var(--r-input);
+    font-size: 14px;
     font-family: inherit;
+    color: var(--text);
+    background: var(--surface);
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+  select:focus, input[type="number"]:focus {
+    border-color: var(--primary-hover);
+    box-shadow: 0 0 0 3px rgba(255,182,110,0.15);
+  }
+  input[type="number"] { width: 84px; }
+  input[type="color"] {
+    width: 44px;
+    height: 36px;
+    padding: 2px;
+    border: 1px solid var(--border);
+    border-radius: var(--r-input);
+    cursor: pointer;
+    background: var(--surface);
+  }
+
+  /* Buttons (Pill 膠囊形) =================================== */
+  .btn {
+    padding: 12px 24px;
+    border: none;
+    border-radius: var(--r-pill);
+    font-size: 14px;
+    font-weight: 600;
+    font-family: inherit;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.2s, box-shadow 0.2s, color 0.2s;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1.2;
   }
   .btn-primary {
     background: var(--primary);
     color: white;
+    box-shadow: var(--shadow-brand);
   }
-  .btn-primary:hover { background: var(--primary-hover); }
+  .btn-primary:hover:not(:disabled) {
+    background: var(--primary-hover);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-brand-hover);
+  }
+  .btn-primary:active:not(:disabled) {
+    transform: translateY(0);
+  }
   .btn-primary:disabled {
-    background: #ccc;
+    background: var(--disabled);
+    color: white;
+    box-shadow: none;
     cursor: not-allowed;
   }
   .btn-ghost {
     background: transparent;
-    color: var(--muted);
-    border: 1px solid var(--border);
-  }
-  .btn-ghost:hover { background: var(--bg); color: var(--text); }
-
-  .drop-zone {
-    border: 2.5px dashed var(--border);
-    border-radius: 16px;
-    padding: 60px 20px;
-    text-align: center;
-    background: var(--surface);
-    cursor: pointer;
-    transition: all 0.2s;
-    margin-bottom: 20px;
-  }
-  .drop-zone:hover,
-  .drop-zone.dragover {
-    border-color: var(--primary);
-    background: #fff8f1;
-  }
-  .drop-zone-icon {
-    font-size: 48px;
-    margin-bottom: 12px;
-  }
-  .drop-zone-text {
-    font-size: 16px;
     color: var(--text);
-    margin-bottom: 4px;
+    padding: 12px 24px;
   }
-  .drop-zone-hint {
-    font-size: 13px;
-    color: var(--muted);
+  .btn-ghost:hover {
+    background: #F5F5F5;
+    color: var(--primary-hover);
   }
 
+  /* Thumbnails ============================================= */
   .thumbs {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-    gap: 12px;
-    margin-bottom: 20px;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 16px;
+    margin-bottom: 24px;
   }
   .thumb {
     position: relative;
     background: var(--surface);
-    border-radius: 10px;
+    border: 1px solid var(--border);
+    border-radius: var(--r-card);
     overflow: hidden;
-    box-shadow: var(--shadow);
+    box-shadow: var(--shadow-card);
     cursor: grab;
-    transition: transform 0.15s, box-shadow 0.15s;
+    transition: transform 0.2s, box-shadow 0.2s;
     user-select: none;
+  }
+  .thumb:hover {
+    box-shadow: var(--shadow-elevated);
+    transform: translateY(-2px);
   }
   .thumb:active { cursor: grabbing; }
   .thumb.dragging { opacity: 0.35; }
   .thumb.drag-over {
-    transform: scale(1.04);
-    box-shadow: 0 0 0 3px var(--primary), 0 6px 24px rgba(232, 130, 74, 0.25);
+    transform: translateY(-4px);
+    box-shadow: 0 0 0 3px var(--primary), var(--shadow-elevated);
   }
   .thumb img {
     -webkit-user-drag: none;
@@ -146,126 +247,126 @@
   }
   .thumb-pic {
     width: 100%;
-    height: 110px;
+    height: 120px;
     object-fit: cover;
     display: block;
     pointer-events: none;
   }
   .thumb-info {
-    padding: 6px 8px;
-    font-size: 11px;
-    color: var(--muted);
+    padding: 8px 12px;
+    font-size: 12px;
+    color: var(--text-secondary);
     display: flex;
     justify-content: space-between;
     align-items: center;
+    border-top: 1px solid var(--border);
   }
   .thumb-order {
     position: absolute;
-    top: 6px;
-    left: 6px;
+    top: 8px;
+    left: 8px;
     background: var(--primary);
     color: white;
-    width: 22px;
-    height: 22px;
+    width: 26px;
+    height: 26px;
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 11px;
-    font-weight: 600;
+    font-size: 12px;
+    font-weight: 700;
+    box-shadow: var(--shadow-brand);
   }
   .thumb-remove {
     position: absolute;
-    top: 6px;
-    right: 6px;
-    background: rgba(0,0,0,0.6);
+    top: 8px;
+    right: 8px;
+    background: rgba(96, 96, 96, 0.85);
     color: white;
-    width: 22px;
-    height: 22px;
+    width: 26px;
+    height: 26px;
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 14px;
+    font-size: 15px;
     cursor: pointer;
     border: none;
     line-height: 1;
+    transition: background 0.15s, transform 0.15s;
   }
-  .thumb-remove:hover { background: rgba(0,0,0,0.85); }
-
-  .thumb-moves {
-    display: flex;
-    gap: 4px;
-    padding: 4px 8px 8px;
-  }
-  .move-btn {
-    flex: 1;
-    background: var(--bg);
-    border: 1px solid var(--border);
-    border-radius: 6px;
-    padding: 4px 0;
-    font-size: 13px;
-    cursor: pointer;
-    color: var(--text);
-    transition: all 0.15s;
-    font-family: inherit;
-  }
-  .move-btn:hover:not(:disabled) {
-    background: var(--primary);
-    color: white;
-    border-color: var(--primary);
-  }
-  .move-btn:disabled {
-    opacity: 0.35;
-    cursor: not-allowed;
+  .thumb-remove:hover {
+    background: var(--coral);
+    transform: scale(1.1);
   }
 
+  /* Preview =============================================== */
   .preview-section {
     background: var(--surface);
-    border-radius: 12px;
-    padding: 20px;
-    box-shadow: var(--shadow);
+    border-radius: var(--r-card);
+    padding: 24px;
+    box-shadow: var(--shadow-card);
   }
   .preview-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 16px;
+    margin-bottom: 20px;
   }
   .preview-header h2 {
-    font-size: 16px;
+    font-size: 22px;
     font-weight: 600;
+    color: var(--text);
+    line-height: 1.35;
   }
   .preview-info {
     font-size: 13px;
-    color: var(--muted);
+    color: var(--text-secondary);
+    padding: 4px 12px;
+    background: var(--primary-tint);
+    color: var(--primary-hover);
+    border-radius: var(--r-pill);
+    font-weight: 600;
   }
   .preview-box {
-    max-height: 600px;
+    max-height: 640px;
     overflow: auto;
-    background: #f5f2ed;
-    border-radius: 8px;
-    padding: 12px;
+    background: var(--cream);
+    border: 1px solid var(--border);
+    border-radius: var(--r-input);
+    padding: 16px;
     text-align: center;
   }
   .preview-box img {
     max-width: 100%;
     display: inline-block;
-    border-radius: 4px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    border-radius: var(--r-sm);
+    box-shadow: var(--shadow-card);
   }
-  .hidden { display: none; }
 
+  .hidden { display: none; }
   .tip {
-    font-size: 12px;
-    color: var(--muted);
+    font-size: 14px;
+    color: var(--text-secondary);
     margin-top: 16px;
     text-align: center;
+    line-height: 1.6;
   }
   .tip-top {
     margin-top: 0;
-    margin-bottom: 10px;
+    margin-bottom: 12px;
     text-align: left;
+  }
+
+  /* Responsive ============================================ */
+  @media (max-width: 768px) {
+    body { padding: 32px 16px; }
+    h1 { font-size: 28px; }
+    .drop-zone { padding: 40px 20px; }
+    .drop-zone-icon { width: 64px; height: 64px; font-size: 36px; }
+    .controls { padding: 16px; gap: 12px; }
+    .thumbs { grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 12px; }
+    .btn { padding: 10px 20px; font-size: 14px; }
   }
 </style>
 </head>
@@ -275,7 +376,13 @@
   <p class="subtitle">把多張截圖拖進來，一鍵拼成一張長圖。檔案只在你的瀏覽器處理，不會上傳。</p>
 
   <div class="drop-zone" id="dropZone">
-    <div class="drop-zone-icon">📥</div>
+    <div class="drop-zone-icon">
+      <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+        <polyline points="7 10 12 15 17 10"/>
+        <line x1="12" y1="15" x2="12" y2="3"/>
+      </svg>
+    </div>
     <div class="drop-zone-text">把截圖拖進來，或點這裡選檔，也可直接擷取後按 Ctrl + V 貼上</div>
     <div class="drop-zone-hint">支援 PNG、JPG、WebP，可一次選多張</div>
     <input type="file" id="fileInput" accept="image/*" multiple hidden>
