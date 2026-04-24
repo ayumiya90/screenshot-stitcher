@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <title>截圖拼接工具 · Abby Tools</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>%F0%9F%8D%8A</text></svg>">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+TC:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -358,6 +359,29 @@
     text-align: left;
   }
 
+  /* Footer ================================================ */
+  .site-footer {
+    margin-top: 48px;
+    padding-top: 24px;
+    border-top: 1px solid var(--border);
+    text-align: center;
+    font-size: 13px;
+    color: var(--text-secondary);
+    line-height: 1.6;
+  }
+  .site-footer a {
+    color: var(--primary-hover);
+    text-decoration: none;
+    font-weight: 600;
+    transition: color 0.2s;
+  }
+  .site-footer a:hover { color: var(--primary); }
+  .footer-sep {
+    display: inline-block;
+    margin: 0 8px;
+    color: var(--text-muted);
+  }
+
   /* Responsive ============================================ */
   @media (max-width: 768px) {
     body { padding: 32px 16px; }
@@ -431,6 +455,12 @@
       <img id="previewImg" alt="預覽">
     </div>
   </div>
+
+  <footer class="site-footer">
+    製作人｜紀澄 Abby
+    <span class="footer-sep">·</span>
+    <a href="https://github.com/ayumiya90/screenshot-stitcher" target="_blank" rel="noopener">開源於 GitHub</a>
+  </footer>
 </div>
 
 <script>
