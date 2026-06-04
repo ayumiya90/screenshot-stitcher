@@ -619,6 +619,16 @@
       <label>背景</label>
       <input type="color" id="bgColor" value="#ffffff">
     </div>
+    <div class="control-group">
+      <label>成品比例</label>
+      <select id="ratio">
+        <option value="original">原始（不留白）</option>
+        <option value="1:1">1:1 正方形</option>
+        <option value="4:5">4:5 直式</option>
+        <option value="3:4">3:4 直式</option>
+        <option value="9:16">9:16 限動</option>
+      </select>
+    </div>
     <div style="flex:1"></div>
     <button class="btn btn-ghost" id="clearBtn">清空</button>
     <button class="btn btn-primary" id="downloadBtn" disabled>下載長圖</button>
@@ -657,6 +667,7 @@ const directionEl = document.getElementById('direction');
 const alignModeEl = document.getElementById('alignMode');
 const gapEl = document.getElementById('gap');
 const bgColorEl = document.getElementById('bgColor');
+const ratioEl = document.getElementById('ratio');
 
 let items = []; // { id, name, img, width, height }
 let uid = 0;
@@ -822,7 +833,7 @@ function hasExternalFiles(dt) {
   return types.includes('Files') && dt.files && dt.files.length > 0;
 }
 
-[directionEl, alignModeEl, gapEl, bgColorEl].forEach(el => {
+[directionEl, alignModeEl, gapEl, bgColorEl, ratioEl].forEach(el => {
   el.addEventListener('change', updatePreview);
   el.addEventListener('input', updatePreview);
 });
@@ -908,6 +919,31 @@ function stitch() {
       cursor += w + gap;
     }
   });
+
+  // 套用成品比例：把拼接內容置中放進符合比例的畫布，周圍用背景色補滿（圖片不變形）
+  const ratio = ratioEl.value;
+  if (ratio && ratio !== 'original') {
+    const [rw, rh] = ratio.split(':').map(Number);
+    const R = rw / rh; // 目標寬/高
+    let outW, outH;
+    if (canvasW / canvasH > R) {
+      // 內容比目標更寬 → 以寬為準，上下補白
+      outW = canvasW;
+      outH = Math.round(canvasW / R);
+    } else {
+      // 內容比目標更窄/更高 → 以高為準，左右補白
+      outH = canvasH;
+      outW = Math.round(canvasH * R);
+    }
+    const out = document.createElement('canvas');
+    out.width = outW;
+    out.height = outH;
+    const octx = out.getContext('2d');
+    octx.fillStyle = bg;
+    octx.fillRect(0, 0, outW, outH);
+    octx.drawImage(canvas, Math.floor((outW - canvasW) / 2), Math.floor((outH - canvasH) / 2));
+    return out;
+  }
 
   return canvas;
 }
